@@ -6,3 +6,6 @@ builtin_interfaces/Time stamp
 
 # The unique identifier of the active checkpoint.
 uint16 checkpoint_id 0
+
+# The unique identifier of the sender.
+string uuid

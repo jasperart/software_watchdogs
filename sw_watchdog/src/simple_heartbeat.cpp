@@ -35,6 +35,7 @@ void print_usage()
         "required arguments:\n"
         "\tperiod: Period in positive integer milliseconds of the heartbeat signal.\n"
         "optional arguments:\n"
+        "\tuuid: Unique identifier of the heartbeat sender.\n"
         "\t-h : Print this help message." <<
         std::endl;
 }
@@ -56,6 +57,7 @@ public:
                                            start_parameter_services(false))
     {
         declare_parameter("period");
+        declare_parameter("uuid","");
 
         const std::vector<std::string>& args = this->get_node_options().arguments();
         // Parse node arguments
@@ -75,6 +77,7 @@ public:
             // exceptions. Raise one here, so stack unwinding happens gracefully.
             std::exit(-1);
         }
+        uuid = get_parameter("uuid").as_string();
 
         // The granted lease is essentially infite here, i.e., only reader/watchdog will notify
         // violations. XXX causes segfault for cyclone dds, hence pass explicit lease life > heartbeat.
@@ -91,11 +94,13 @@ public:
     }
 
 private:
+    std::string uuid;
     void timer_callback()
     {
         auto message = sw_watchdog_msgs::msg::Heartbeat();
         rclcpp::Time now = this->get_clock()->now();
         message.stamp = now;
+        message.uuid = uuid;
         RCLCPP_INFO(this->get_logger(), "Publishing heartbeat, sent at [%f]", now.seconds());
         publisher_->publish(message);
     }
